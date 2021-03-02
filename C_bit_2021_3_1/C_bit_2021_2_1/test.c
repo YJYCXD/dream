@@ -287,7 +287,7 @@ int main()
 	n3->next = n4;
 	n4->next = NULL;
 
-	partition(n1, 3);
+	partition(n1, 4);
 	//printf("%d\n", ret);
 
 	return 0;
