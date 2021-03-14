@@ -2,12 +2,69 @@
 
 #include "MyContact.h"
 
+static void CheckCapacity(Con* contact)
+{
+	PeopleInfo* tmp = NULL;
+	if (contact->size == contact->capacity)
+	{
+		contact->capacity *= 2;
+		tmp = (PeopleInfo*)realloc(contact->data, sizeof(PeopleInfo) * contact->capacity);
+		if (tmp == NULL)
+		{
+			printf("CheckCapacity::%s\n", strerror(errno));
+			exit(-1);
+		}
+		else
+		{
+			contact->data = tmp;
+			printf("增容成功\n");
+		}
+	}
+	else
+	{
+		return;
+	}
+}
+
+
+//加载通讯录
+void LoadContact(Con* contact)
+{
+	//打开文件
+	FILE* pf = fopen("contact.dat", "rb");
+	if (pf == NULL)
+	{
+		printf("LoadContact::%s\n", strerror(errno));
+		return;
+		//exit(-1);
+	}
+	PeopleInfo tmp = { 0 };
+	while (fread(&tmp, sizeof(PeopleInfo), 1, pf))
+	{
+		CheckCapacity(contact);
+		contact->data[contact->size] = tmp;
+		contact->size++;
+	}
+	//关闭文件
+	fclose(pf);
+	pf = NULL;
+}
+
 //通讯录初始化
 void ContactInit(Con* contact)
 {
 	assert(contact);
+	//加载通讯录函数
+	contact->data = (PeopleInfo*)malloc(sizeof(PeopleInfo) * 4);
+	if (contact->data == NULL)
+	{
+		printf("ContactInit::%s\n", strerror(errno));
+		exit(-1);
+	}
 	contact->size = 0;
-	memset(contact->data, 0, sizeof(contact->data));
+	contact->capacity = 4;
+	LoadContact(contact);
+
 }
 
 //录入联系人
@@ -25,21 +82,17 @@ static InfoInput(Con* people, int pos)
 	scanf("%s", people->data[pos].wechat);
 }
 
+
+
 //添加联系人
 void AddContact(Con* contact)
 {
 	assert(contact);
 	//添加之前进行容量判断
-	if (contact->size == SIZE)
-	{
-		printf("通讯录已满，无法添加\n");
-	}
-	else
-	{
-		//录入信息的函数
-		InfoInput(contact, contact->size);
-		contact->size++;
-	}
+	CheckCapacity(contact);
+	//录入信息的函数
+	InfoInput(contact, contact->size);
+	contact->size++;
 }
 
 
@@ -108,7 +161,7 @@ int SearchContact(Con* contact)
 		if (strcmp(contact->data[i].name, name) == 0 || strcmp(contact->data[i].wechat, wechat) == 0)
 		{
 			ContactOpen(contact, i);
-			Sleep(5000);
+			Sleep(3000);
 			return i;
 		}
 	}
@@ -203,4 +256,25 @@ void SortContact(Con* contact)
 {
 	assert(contact);
 	Myqsort(contact->data, contact->size, sizeof(contact->data[0]), compare);
+}
+
+//保存通讯录
+void ContactSave(Con* contact)
+{
+	//打开文件
+	FILE* pf = fopen("contact.dat", "wb");
+	if (pf == NULL)
+	{
+		printf("ContactSave::%s\n", strerror(errno));
+		exit(-1);
+	}
+	int i = 0;
+	for (i = 0; i < contact->size; i++)
+	{
+		fwrite(contact->data + i, sizeof(PeopleInfo), 1, pf);
+	}
+
+	//关闭文件
+	fclose(pf);
+	pf = NULL;
 }

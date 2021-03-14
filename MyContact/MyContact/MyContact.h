@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <errno.h>
 #include <windows.h>
 
 #define NAME 20
@@ -42,11 +43,22 @@ typedef struct PeopleInfo
 }PeopleInfo;
 
 //定义通讯录的结构体，用来保存联系人信息和当前已经存放的联系人个数
+
+////静态版本
+//typedef struct Con
+//{
+//	PeopleInfo data[SIZE];
+//	int size;
+//}Con;
+
+//动态版本
 typedef struct Con
 {
-	PeopleInfo data[SIZE];
+	PeopleInfo* data;
 	int size;
+	int capacity;
 }Con;
+
 
 //对通讯录进行初始化
 void ContactInit(Con* contact);
@@ -74,3 +86,6 @@ void DeleteContact(Con* contact, int pos);
 
 //对通讯录排序
 void SortContact(Con* contact);
+
+//保存通讯录
+void ContactSave(Con* contact);

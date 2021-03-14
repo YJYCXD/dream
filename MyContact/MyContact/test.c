@@ -44,7 +44,8 @@ int main()
 			SortContact(&contact);
 			break;
 		case EXIT:
-			printf("拜拜\n");
+			ContactSave(&contact);
+			printf("保存成功，拜拜\n");
 			break;
 		default:
 			printf("输入错误，请重新输入\n");
